@@ -107,4 +107,19 @@ public class EmbeddedWebServerFactoryCustomizerAutoConfiguration {
 
 	}
 
+	/**
+	 * Nested configuration if Netty 5 is being used.
+	 */
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(reactor.netty5.http.server.HttpServer.class)
+	public static class Netty5WebServerFactoryCustomizerConfiguration {
+
+		@Bean
+		public Netty5WebServerFactoryCustomizer netty5WebServerFactoryCustomizer(Environment environment,
+				ServerProperties serverProperties) {
+			return new Netty5WebServerFactoryCustomizer(environment, serverProperties);
+		}
+
+	}
+
 }

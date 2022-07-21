@@ -35,6 +35,8 @@ import org.springframework.http.client.reactive.JdkClientHttpConnector;
 import org.springframework.http.client.reactive.JettyClientHttpConnector;
 import org.springframework.http.client.reactive.JettyResourceFactory;
 import org.springframework.http.client.reactive.ReactorClientHttpConnector;
+import org.springframework.http.client.reactive.ReactorNetty5ClientHttpConnector;
+import org.springframework.http.client.reactive.ReactorNetty5ResourceFactory;
 import org.springframework.http.client.reactive.ReactorResourceFactory;
 
 /**
@@ -67,6 +69,29 @@ class ClientHttpConnectorConfiguration {
 					.reduce((before, after) -> (client) -> after.configure(before.configure(client)))
 					.orElse((client) -> client);
 			return new ReactorClientHttpConnector(reactorResourceFactory, mapper::configure);
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnClass(reactor.netty5.http.client.HttpClient.class)
+	@ConditionalOnMissingBean(ClientHttpConnector.class)
+	static class ReactorNetty5 {
+
+		@Bean
+		@ConditionalOnMissingBean
+		ReactorNetty5ResourceFactory reactorClientResourceFactory() {
+			return new ReactorNetty5ResourceFactory();
+		}
+
+		@Bean
+		@Lazy
+		ReactorNetty5ClientHttpConnector reactorClientHttpConnector(ReactorNetty5ResourceFactory reactorResourceFactory,
+				ObjectProvider<ReactorNetty5HttpClientMapper> mapperProvider) {
+			ReactorNetty5HttpClientMapper mapper = mapperProvider.orderedStream()
+					.reduce((before, after) -> (client) -> after.configure(before.configure(client)))
+					.orElse((client) -> client);
+			return new ReactorNetty5ClientHttpConnector(reactorResourceFactory, mapper::configure);
 		}
 
 	}

@@ -297,6 +297,36 @@ class ReactiveWebServerFactoryAutoConfigurationTests {
 	}
 
 	@Test
+	void netty5ServerCustomizerBeanIsAddedToFactory() {
+		new ReactiveWebApplicationContextRunner(AnnotationConfigReactiveWebApplicationContext::new)
+				.withConfiguration(AutoConfigurations.of(ReactiveWebServerFactoryAutoConfiguration.class))
+				.withClassLoader(new FilteredClassLoader(Tomcat.class, HttpServer.class, Server.class, Undertow.class))
+				.withUserConfiguration(Netty5ServerCustomizerConfiguration.class, HttpHandlerConfiguration.class)
+				.run((context) -> {
+					org.springframework.boot.web.embedded.netty5.NettyReactiveWebServerFactory factory =
+							context.getBean(org.springframework.boot.web.embedded.netty5.NettyReactiveWebServerFactory.class);
+					assertThat(factory.getServerCustomizers()).hasSize(1);
+				});
+	}
+
+	@Test
+	void netty5ServerCustomizerRegisteredAsBeanAndViaFactoryIsOnlyCalledOnce() {
+		new ReactiveWebApplicationContextRunner(AnnotationConfigReactiveWebServerApplicationContext::new)
+				.withConfiguration(AutoConfigurations.of(ReactiveWebServerFactoryAutoConfiguration.class))
+				.withClassLoader(new FilteredClassLoader(Tomcat.class, HttpServer.class, Server.class, Undertow.class))
+				.withUserConfiguration(DoubleRegistrationNetty5ServerCustomizerConfiguration.class,
+						HttpHandlerConfiguration.class)
+				.withPropertyValues("server.port: 0").run((context) -> {
+					org.springframework.boot.web.embedded.netty5.NettyReactiveWebServerFactory factory =
+							context.getBean(org.springframework.boot.web.embedded.netty5.NettyReactiveWebServerFactory.class);
+					org.springframework.boot.web.embedded.netty5.NettyServerCustomizer customizer =
+							context.getBean("serverCustomizer", org.springframework.boot.web.embedded.netty5.NettyServerCustomizer.class);
+					assertThat(factory.getServerCustomizers()).contains(customizer);
+					then(customizer).should().apply(any(reactor.netty5.http.server.HttpServer.class));
+				});
+	}
+
+	@Test
 	void forwardedHeaderTransformerShouldBeConfigured() {
 		this.contextRunner.withUserConfiguration(HttpHandlerConfiguration.class)
 				.withPropertyValues("server.forward-headers-strategy=framework", "server.port=0")
@@ -517,6 +547,16 @@ class ReactiveWebServerFactoryAutoConfigurationTests {
 	}
 
 	@Configuration(proxyBeanMethods = false)
+	static class Netty5ServerCustomizerConfiguration {
+
+		@Bean
+		org.springframework.boot.web.embedded.netty5.NettyServerCustomizer serverCustomizer() {
+			return (server) -> server;
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
 	static class DoubleRegistrationNettyServerCustomizerConfiguration {
 
 		private final NettyServerCustomizer customizer = mock(NettyServerCustomizer.class);
@@ -532,6 +572,28 @@ class ReactiveWebServerFactoryAutoConfigurationTests {
 
 		@Bean
 		WebServerFactoryCustomizer<NettyReactiveWebServerFactory> nettyCustomizer() {
+			return (netty) -> netty.addServerCustomizers(this.customizer);
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	static class DoubleRegistrationNetty5ServerCustomizerConfiguration {
+
+		private final org.springframework.boot.web.embedded.netty5.NettyServerCustomizer customizer =
+				mock(org.springframework.boot.web.embedded.netty5.NettyServerCustomizer.class);
+
+		DoubleRegistrationNetty5ServerCustomizerConfiguration() {
+			given(this.customizer.apply(any(reactor.netty5.http.server.HttpServer.class))).willAnswer((invocation) -> invocation.getArgument(0));
+		}
+
+		@Bean
+		org.springframework.boot.web.embedded.netty5.NettyServerCustomizer serverCustomizer() {
+			return this.customizer;
+		}
+
+		@Bean
+		WebServerFactoryCustomizer<org.springframework.boot.web.embedded.netty5.NettyReactiveWebServerFactory> nettyCustomizer() {
 			return (netty) -> netty.addServerCustomizers(this.customizer);
 		}
 

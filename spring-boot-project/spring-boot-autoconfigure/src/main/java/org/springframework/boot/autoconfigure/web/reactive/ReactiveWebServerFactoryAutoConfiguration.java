@@ -58,7 +58,8 @@ import org.springframework.web.server.adapter.ForwardedHeaderTransformer;
 		ReactiveWebServerFactoryConfiguration.EmbeddedTomcat.class,
 		ReactiveWebServerFactoryConfiguration.EmbeddedJetty.class,
 		ReactiveWebServerFactoryConfiguration.EmbeddedUndertow.class,
-		ReactiveWebServerFactoryConfiguration.EmbeddedNetty.class })
+		ReactiveWebServerFactoryConfiguration.EmbeddedNetty.class,
+		ReactiveWebServerFactoryConfiguration.EmbeddedNetty5.class})
 public class ReactiveWebServerFactoryAutoConfiguration {
 
 	@Bean

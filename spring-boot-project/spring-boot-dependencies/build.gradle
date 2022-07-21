@@ -1300,6 +1300,7 @@ bom {
 				"spring-boot-starter-oauth2-resource-server",
 				"spring-boot-starter-quartz",
 				"spring-boot-starter-reactor-netty",
+				"spring-boot-starter-reactor-netty5",
 				"spring-boot-starter-rsocket",
 				"spring-boot-starter-security",
 				"spring-boot-starter-test",
@@ -1412,7 +1413,7 @@ bom {
 			]
 		}
 	}
-	library("Spring Framework", "6.0.0-M5") {
+	library("Spring Framework", "6.0.0-SNAPSHOT") {
 		group("org.springframework") {
 			imports = [
 				"spring-framework-bom"

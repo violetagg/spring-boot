@@ -1,0 +1,9 @@
+plugins {
+	id "org.springframework.boot.starter"
+}
+
+description = "Starter for using Reactor Netty for Netty 5 as the embedded reactive HTTP server."
+
+dependencies {
+	api("io.projectreactor.netty:reactor-netty5-http:2.0.0-M1")
+}

@@ -31,6 +31,7 @@ dependencies {
 	optional("com.sun.mail:jakarta.mail")
 	optional("io.lettuce:lettuce-core")
 	optional("io.projectreactor.netty:reactor-netty-http")
+	optional("io.projectreactor.netty:reactor-netty5-http:2.0.0-M1")
 	optional("io.r2dbc:r2dbc-spi")
 	optional("io.r2dbc:r2dbc-pool")
 	optional("io.rsocket:rsocket-core")

@@ -341,9 +341,21 @@ class ServerPropertiesTests {
 	}
 
 	@Test
+	void testCustomizeNetty5IdleTimeout() {
+		bind("server.netty5.idle-timeout", "10s");
+		assertThat(this.properties.getNetty5().getIdleTimeout()).isEqualTo(Duration.ofSeconds(10));
+	}
+
+	@Test
 	void testCustomizeNettyMaxKeepAliveRequests() {
 		bind("server.netty.max-keep-alive-requests", "100");
 		assertThat(this.properties.getNetty().getMaxKeepAliveRequests()).isEqualTo(100);
+	}
+
+	@Test
+	void testCustomizeNetty5MaxKeepAliveRequests() {
+		bind("server.netty5.max-keep-alive-requests", "100");
+		assertThat(this.properties.getNetty5().getMaxKeepAliveRequests()).isEqualTo(100);
 	}
 
 	@Test
@@ -529,8 +541,19 @@ class ServerPropertiesTests {
 	}
 
 	@Test
+	void netty5MaxInitialLineLengthMatchesHttpDecoderSpecDefault() {
+		assertThat(this.properties.getNetty5().getMaxInitialLineLength().toBytes())
+				.isEqualTo(reactor.netty5.http.HttpDecoderSpec.DEFAULT_MAX_INITIAL_LINE_LENGTH);
+	}
+
+	@Test
 	void nettyValidateHeadersMatchesHttpDecoderSpecDefault() {
 		assertThat(this.properties.getNetty().isValidateHeaders()).isEqualTo(HttpDecoderSpec.DEFAULT_VALIDATE_HEADERS);
+	}
+
+	@Test
+	void netty5ValidateHeadersMatchesHttpDecoderSpecDefault() {
+		assertThat(this.properties.getNetty5().isValidateHeaders()).isEqualTo(reactor.netty5.http.HttpDecoderSpec.DEFAULT_VALIDATE_HEADERS);
 	}
 
 	@Test
@@ -540,9 +563,21 @@ class ServerPropertiesTests {
 	}
 
 	@Test
+	void netty5H2cMaxContentLengthMatchesHttpDecoderSpecDefault() {
+		assertThat(this.properties.getNetty5().getH2cMaxContentLength().toBytes())
+				.isEqualTo(reactor.netty5.http.server.HttpRequestDecoderSpec.DEFAULT_H2C_MAX_CONTENT_LENGTH);
+	}
+
+	@Test
 	void nettyInitialBufferSizeMatchesHttpDecoderSpecDefault() {
 		assertThat(this.properties.getNetty().getInitialBufferSize().toBytes())
 				.isEqualTo(HttpDecoderSpec.DEFAULT_INITIAL_BUFFER_SIZE);
+	}
+
+	@Test
+	void netty5InitialBufferSizeMatchesHttpDecoderSpecDefault() {
+		assertThat(this.properties.getNetty5().getInitialBufferSize().toBytes())
+				.isEqualTo(reactor.netty5.http.HttpDecoderSpec.DEFAULT_INITIAL_BUFFER_SIZE);
 	}
 
 	private Connector getDefaultConnector() {

@@ -32,6 +32,7 @@ dependencies {
 	optional("io.netty:netty-tcnative-boringssl-static")
 	optional("io.projectreactor:reactor-tools")
 	optional("io.projectreactor.netty:reactor-netty-http")
+	optional("io.projectreactor.netty:reactor-netty5-http:2.0.0-M1")
 	optional("io.r2dbc:r2dbc-pool")
 	optional("io.rsocket:rsocket-core")
 	optional("io.rsocket:rsocket-transport-netty")

@@ -20,6 +20,7 @@ import java.util.stream.Collectors;
 
 import io.undertow.Undertow;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.springframework.http.client.reactive.ReactorNetty5ResourceFactory;
 import reactor.netty.http.server.HttpServer;
 
 import org.springframework.beans.factory.ObjectProvider;
@@ -69,6 +70,32 @@ abstract class ReactiveWebServerFactoryConfiguration {
 		NettyReactiveWebServerFactory nettyReactiveWebServerFactory(ReactorResourceFactory resourceFactory,
 				ObjectProvider<NettyRouteProvider> routes, ObjectProvider<NettyServerCustomizer> serverCustomizers) {
 			NettyReactiveWebServerFactory serverFactory = new NettyReactiveWebServerFactory();
+			serverFactory.setResourceFactory(resourceFactory);
+			routes.orderedStream().forEach(serverFactory::addRouteProviders);
+			serverFactory.getServerCustomizers().addAll(serverCustomizers.orderedStream().collect(Collectors.toList()));
+			return serverFactory;
+		}
+
+	}
+
+	@Configuration(proxyBeanMethods = false)
+	@ConditionalOnMissingBean(ReactiveWebServerFactory.class)
+	@ConditionalOnClass({ reactor.netty5.http.server.HttpServer.class })
+	static class EmbeddedNetty5 {
+
+		@Bean
+		@ConditionalOnMissingBean
+		ReactorNetty5ResourceFactory reactorServerResourceFactory() {
+			return new ReactorNetty5ResourceFactory();
+		}
+
+		@Bean
+		org.springframework.boot.web.embedded.netty5.NettyReactiveWebServerFactory
+				nettyReactiveWebServerFactory(ReactorNetty5ResourceFactory resourceFactory,
+						ObjectProvider<org.springframework.boot.web.embedded.netty5.NettyRouteProvider> routes,
+						ObjectProvider<org.springframework.boot.web.embedded.netty5.NettyServerCustomizer> serverCustomizers) {
+			org.springframework.boot.web.embedded.netty5.NettyReactiveWebServerFactory serverFactory =
+					new org.springframework.boot.web.embedded.netty5.NettyReactiveWebServerFactory();
 			serverFactory.setResourceFactory(resourceFactory);
 			routes.orderedStream().forEach(serverFactory::addRouteProviders);
 			serverFactory.getServerCustomizers().addAll(serverCustomizers.orderedStream().collect(Collectors.toList()));
